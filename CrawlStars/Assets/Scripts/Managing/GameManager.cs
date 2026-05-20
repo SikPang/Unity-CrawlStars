@@ -3,7 +3,7 @@ using Core.Player;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour {
-    [SerializeField] private MapGenerator mapGenerator;
+    [SerializeField] private MapRenderer mapRenderer;
     [SerializeField] private Simulator simulator;
     
     private static GameManager instance;
@@ -26,7 +26,7 @@ public class GameManager : MonoBehaviour {
     // 서버에서 정보 받아와서 세팅
     public void Initialize() {
         // 맵 타입
-        mapGenerator.Generate(MapLoader.MapType.A);
+        mapRenderer.Generate(MapLoader.MapType.A);
         
         // 플레이어들 정보
         PlayerManager.Instance.Initialize();

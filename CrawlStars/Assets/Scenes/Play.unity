@@ -218,7 +218,7 @@ GameObject:
   - component: {fileID: 864935731}
   - component: {fileID: 864935732}
   m_Layer: 0
-  m_Name: MapGenerator
+  m_Name: MapRenderer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -281,7 +281,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 62ca186ebb55d4108b8d6c21533f6c83, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
-  mapGenerator: {fileID: 864935732}
+  mapRenderer: {fileID: 864935732}
   simulator: {fileID: 1346880628}
 --- !u!4 &1301852649
 Transform:
