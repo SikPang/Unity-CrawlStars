@@ -13,8 +13,8 @@ namespace Core.Map {
 
         public const float TileScale = 1.2f;
 
-        public void Generate(MapLoader.MapType mapType) {
-            var mapData = MapLoader.LoadMapFile(mapType);
+        public void Generate(int mapIndex) {
+            var mapData = MapLoader.GetMapData(mapIndex);
             if (mapData == null) return;
 
             Vector2 startPos = new Vector2(

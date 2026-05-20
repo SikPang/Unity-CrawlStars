@@ -25,8 +25,8 @@ public class GameManager : MonoBehaviour {
 
     // 서버에서 정보 받아와서 세팅
     public void Initialize() {
-        // 맵 타입
-        mapRenderer.Generate(MapLoader.MapType.A);
+        // 맵 인덱스
+        mapRenderer.Generate(0);
         
         // 플레이어들 정보
         PlayerManager.Instance.Initialize();
