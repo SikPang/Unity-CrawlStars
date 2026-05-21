@@ -11,13 +11,11 @@ namespace Core.Map {
 
         private List<Tile> loadedTiles = new List<Tile>();
 
-        public const float TileScale = 1.2f;
-
-        public void Generate(int mapIndex) {
+        public void Render(int mapIndex) {
             var mapData = MapLoader.GetMapData(mapIndex);
             if (mapData == null) return;
 
-            Vector2 startPos = GetMapStartPos(mapData);
+            Vector2 startPos = MapHelper.GetMapStartPos(mapData);
 
             for (int y = 0; y < mapData.height; ++y) {
                 for (int x = 0; x < mapData.width; ++x) {
@@ -25,8 +23,8 @@ namespace Core.Map {
                     if (obj == null) return;
 
                     var tileType = mapData.map[y][x] == 1 ? Tile.TileType.Wall : Tile.TileType.Ground;
-                    obj.Initialize(tileType, TileScale);
-                    obj.transform.localPosition = startPos + new Vector2(x, -y) * TileScale;
+                    obj.Initialize(tileType, MapHelper.TileSize);
+                    obj.transform.localPosition = startPos + new Vector2(x, -y) * MapHelper.TileSize;
                     loadedTiles.Add(obj);
                 }
             }
@@ -38,10 +36,5 @@ namespace Core.Map {
             }
             loadedTiles.Clear();
         }
-
-        public static Vector2 GetMapStartPos(MapData mapData) => new Vector2(
-            -TileScale * (mapData.width - 1) * 0.5f,
-            TileScale * (mapData.height - 1) * 0.5f
-        );
     }
 }
