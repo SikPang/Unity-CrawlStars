@@ -10,9 +10,9 @@ namespace Core.Player {
         }
         
         public void RotateTo(Vector2 direction) {
-            if (direction.sqrMagnitude <= 0.0001f) return;
+            if (direction == Vector2.zero) return;
 
-            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+            float angle = MathUtil.GetAngle(direction);
             transform.rotation = Quaternion.Euler(0f, 0f, angle);
         }
 

@@ -19,6 +19,8 @@ namespace Core.Controller {
             }
         }
 
+        // Update 에서 인풋을 감지하고 저장 -> Tick 에서 저장한 인풋을 가져옴
+        // Tick보다 Update가 자주 돌아서 놓치는 인풋이 없게 하기 위함
         public Vector2 CaptureAttackDirection() {
             var ret = attackDirection;
             attackDirection = Vector2.zero;
