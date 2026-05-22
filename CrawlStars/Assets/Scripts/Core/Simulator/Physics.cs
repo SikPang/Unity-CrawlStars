@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Core.Simulator {
     public static class Physics {
-        public static Vector2 GetPlayerNextPos(Vector2 origin, Vector2 movement, float radius = 0.5f) {
+        public static Vector2 GetNextPlayerPos(Vector2 origin, Vector2 movement, float radius) {
             Vector2 nextX = origin + new Vector2(movement.x, 0f);
             bool isHorizontalBlocked = CheckWallCollision(nextX, radius);
             if (!isHorizontalBlocked) {
@@ -16,6 +16,15 @@ namespace Core.Simulator {
                 origin = nextY;
             }
             return origin;
+        }
+        
+        public static (Vector2 nextPos, bool hitWall) SimulateProjectile(Vector2 origin, Vector2 movement, float radius) {
+            Vector2 nextPos = origin + movement;
+
+            if (CheckWallCollision(nextPos, radius)) {
+                return (origin, true);
+            }
+            return (nextPos, false);
         }
 
         private static bool CheckWallCollision(Vector2 circleCenter, float radius) {

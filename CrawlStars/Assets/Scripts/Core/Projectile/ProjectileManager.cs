@@ -7,7 +7,7 @@ namespace Core.Projectile {
         private static ProjectileManager instance;
         public static ProjectileManager Instance => instance ??= new ProjectileManager();
 
-        private Dictionary<int, ProjectileListener> projectiles = new Dictionary<int, ProjectileListener>();
+        private Dictionary<string, ProjectileListener> projectiles = new Dictionary<string, ProjectileListener>();
 
         public void UpdateProjectiles(List<ProjectileData> dataList) {
             var willRemoveList = new List<ProjectileData>();

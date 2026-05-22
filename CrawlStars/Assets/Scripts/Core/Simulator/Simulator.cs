@@ -41,67 +41,80 @@ namespace Core.Simulator {
 
         private List<ProjectileData> projectiles = new List<ProjectileData>();
         private List<ProjectileData> willRemoveProjectiles = new List<ProjectileData>();
+        private List<ProjectileData> willAddProjectiles = new List<ProjectileData>();
 
         // temp data
         private Vector2 playerPos = Vector2.up;
 
         private ProjectileData BaseProjectile => new ProjectileData {
             Pos = playerPos,
-            Speed = 0.8f,
+            Speed = 5f,
             Damage = 10f,
-            Radius = 0.3f,
-            OwnerId = 1234
+            Radius = 0.3f
         };
-        private const float MoveSpeed = 0.2f;
+        private const float PlayerMoveSpeed = 2f;
         private const float PlayerRadius = 0.5f;
 
         private void Tick() {
-            // ----- Receive client's input -----
+            // ===== Receive client's input =====
             Vector2 moveDirection = inputProvider.GetMoveDirection();
             Vector2 attackDirection = inputProvider.CaptureAttackDirection();
 
-            // ----- Simulate -----
+            // ===== Simulate =====
+            // 1. 플레이어 움직임
             if (moveDirection != Vector2.zero) {
-                Vector2 movement = MoveSpeed * TickThreshold * moveDirection;
-                playerPos = Physics.GetPlayerNextPos(playerPos, movement, PlayerRadius);
+                Vector2 movement = PlayerMoveSpeed * TickThreshold * moveDirection;
+                playerPos = Physics.GetNextPlayerPos(playerPos, movement, PlayerRadius);
             }
 
-            SimulateProjectiles();
+            // 2. 투사체 움직임
+            foreach (var projectile in projectiles) {
+                Vector2 movement = projectile.Speed * TickThreshold * projectile.Dir;
+                (Vector2 nextPos, bool hitWall) res 
+                    = Physics.SimulateProjectile(projectile.Pos, movement, projectile.Radius);
+
+                projectile.Pos = res.nextPos;
+                if (res.hitWall) {
+                    projectile.IsDestroyed = true;
+                    willRemoveProjectiles.Add(projectile);
+                }
+            }
+
+            // 3. 만들어질 투사체 생성
             ProjectileData newProjectile = null; 
             if (attackDirection != Vector2.zero) {
                 newProjectile = BaseProjectile;
                 newProjectile.Dir = attackDirection;
-                projectiles.Add(newProjectile);
+                newProjectile.Id = Guid.NewGuid().ToString();
+                willAddProjectiles.Add(newProjectile);
             }
 
-            // ----- Send to client -----
+            // ===== Send to client =====
+            // 1. 플레이어 처리
             PlayerManager.Instance.Move(playerPos);
             PlayerManager.Instance.Rotate(moveDirection);
             if (attackDirection != Vector2.zero) {
                 PlayerManager.Instance.Attack(playerPos, attackDirection);
             }
 
+            // 2. 투사체 처리
             ProjectileManager.Instance.UpdateProjectiles(projectiles);
             if (newProjectile != null) {
                 ProjectileManager.Instance.Create(newProjectile);
             }
-        }
-
-        private void SimulateProjectiles() {
-            // Move Projectiles
-            foreach (var projectile in projectiles) {
-                // var nextPos = Physics.GetProjectileNextPos(projectile);
-                
+            
+            // ===== Post Process =====
+            // 클라에게 지워졌다고 정보를 전송해야 하기 때문
+            foreach (var projectile in willRemoveProjectiles) {
+                projectiles.Remove(projectile);
             }
+            willRemoveProjectiles.Clear();
 
-            // Remove Collided Projectiles
-            if (willRemoveProjectiles.Count > 0) {
-                foreach (var projectile in willRemoveProjectiles) {
-                    // need abandon prefab only client
-                    projectiles.Remove(projectile);
-                }
-                willRemoveProjectiles.Clear();
+            // 생성이 움직임보다 나중에 되기 때문
+            foreach (var projectile in willAddProjectiles) {
+                projectiles.Add(projectile);
             }
+            willAddProjectiles.Clear();
         }
     }
 }

@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8731228768460954703}
   - component: {fileID: 5351688119941424858}
+  - component: {fileID: 3455004370630747285}
   m_Layer: 0
   m_Name: Projectile
   m_TagString: Untagged
@@ -91,3 +92,15 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!114 &3455004370630747285
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4444890929090122588}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 089181397d67499d9fe96b65fc2ce524, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Core.Projectile.ProjectileListener

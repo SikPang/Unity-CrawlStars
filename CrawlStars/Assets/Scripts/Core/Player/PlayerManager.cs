@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using CameraControl;
@@ -9,7 +10,7 @@ namespace Core.Player {
         private static PlayerManager instance;
         public static PlayerManager Instance => instance ??= new PlayerManager();
         
-        private Dictionary<int, PlayerListener> playerListeners = new Dictionary<int, PlayerListener>();
+        private Dictionary<string, PlayerListener> playerListeners = new Dictionary<string, PlayerListener>();
 
         public void Initialize(/* Player infos from server (id, characterType, position) */) {
             var playerListener = ObjectPooling.Instance.Get<PlayerListener>("Player");
@@ -18,7 +19,7 @@ namespace Core.Player {
                 return;
             }
 
-            playerListener.Id = 1234;
+            playerListener.Id = Guid.NewGuid().ToString();
             playerListener.transform.position = Vector3.back;
             playerListeners.TryAdd(playerListener.Id, playerListener);
             CommonCache.MainCamera.GetComponent<CameraController>().TargetPlayer = playerListener.transform;
