@@ -9,7 +9,8 @@ namespace Core.Controller {
         private void Update() {
             // 조준
             if (Input.GetKey(KeyCode.Mouse0)) {
-                AimDirection = GetMouseWorldPos();
+                var mouseWorldPos = GetMouseWorldPos();
+                AimDirection = (mouseWorldPos - (Vector2)CommonCache.MainCamera.transform.position).normalized;
             }
 
             // 발사
@@ -40,9 +41,7 @@ namespace Core.Controller {
         private Vector2 GetMouseWorldPos() {
             Vector3 mouseScreenPos = Input.mousePosition;
             mouseScreenPos.z = -CommonCache.MainCamera.transform.position.z;
-
-            Vector3 worldPos = CommonCache.MainCamera.ScreenToWorldPoint(mouseScreenPos);
-            return new Vector2(worldPos.x, worldPos.y);
+            return CommonCache.MainCamera.ScreenToWorldPoint(mouseScreenPos);
         }
     }
 }

@@ -48,7 +48,7 @@ namespace Core.Simulator {
 
         private ProjectileData BaseProjectile => new ProjectileData {
             Pos = playerPos,
-            Speed = 5f,
+            Speed = 13f,
             Damage = 10f,
             Radius = 0.3f
         };
