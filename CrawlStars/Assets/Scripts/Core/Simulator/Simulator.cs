@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Core.Controller;
 using Core.Player;
+using Core.Projectile;
 using UnityEngine;
 
 namespace Core.Simulator {
@@ -38,26 +39,68 @@ namespace Core.Simulator {
             isStarted = true;
         }
 
+        private List<ProjectileData> projectiles = new List<ProjectileData>();
+        private List<ProjectileData> willRemoveProjectiles = new List<ProjectileData>();
+
         // temp data
         private Vector2 playerPos = Vector2.up;
+
+        private ProjectileData BaseProjectile => new ProjectileData {
+            Pos = playerPos,
+            Speed = 0.8f,
+            Damage = 10f,
+            Radius = 0.3f,
+            OwnerId = 1234
+        };
         private const float MoveSpeed = 0.2f;
         private const float PlayerRadius = 0.5f;
 
         private void Tick() {
-            // Get player's input
+            // ----- Receive client's input -----
             Vector2 moveDirection = inputProvider.GetMoveDirection();
             Vector2 attackDirection = inputProvider.CaptureAttackDirection();
 
-            // Simulate
+            // ----- Simulate -----
             if (moveDirection != Vector2.zero) {
-                playerPos = Physics.GetNextPosition(playerPos, moveDirection * MoveSpeed, PlayerRadius);
+                Vector2 movement = MoveSpeed * TickThreshold * moveDirection;
+                playerPos = Physics.GetPlayerNextPos(playerPos, movement, PlayerRadius);
             }
 
-            // Return to clients
+            SimulateProjectiles();
+            ProjectileData newProjectile = null; 
+            if (attackDirection != Vector2.zero) {
+                newProjectile = BaseProjectile;
+                newProjectile.Dir = attackDirection;
+                projectiles.Add(newProjectile);
+            }
+
+            // ----- Send to client -----
             PlayerManager.Instance.Move(playerPos);
             PlayerManager.Instance.Rotate(moveDirection);
             if (attackDirection != Vector2.zero) {
                 PlayerManager.Instance.Attack(playerPos, attackDirection);
+            }
+
+            ProjectileManager.Instance.UpdateProjectiles(projectiles);
+            if (newProjectile != null) {
+                ProjectileManager.Instance.Create(newProjectile);
+            }
+        }
+
+        private void SimulateProjectiles() {
+            // Move Projectiles
+            foreach (var projectile in projectiles) {
+                // var nextPos = Physics.GetProjectileNextPos(projectile);
+                
+            }
+
+            // Remove Collided Projectiles
+            if (willRemoveProjectiles.Count > 0) {
+                foreach (var projectile in willRemoveProjectiles) {
+                    // need abandon prefab only client
+                    projectiles.Remove(projectile);
+                }
+                willRemoveProjectiles.Clear();
             }
         }
     }
