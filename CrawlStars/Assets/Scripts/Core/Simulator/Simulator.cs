@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Core.Controller;
 using Core.Player;
@@ -12,13 +11,13 @@ namespace Core.Simulator {
 
         public int TickCount { get; private set; }
         private float accumulator;
-        private bool isStarted;
+        private bool isActivated;
 
         private const int TickRate = 30;
-        private const float TickThreshold = 1f / TickRate;
+        public const float TickThreshold = 1f / TickRate;
 
         private void Update() {
-            if (!isStarted) return;
+            if (!isActivated) return;
 
             accumulator += Time.deltaTime;
 
@@ -30,76 +29,71 @@ namespace Core.Simulator {
         }
 
         public void Initialize() {
+            for (int i = 0; i < 2; ++i) {
+                var player = PlayerData.BasePlayerData;
+                player.Pos = Vector2.up * (i + 1) * 2;
+                players.Add(player);
+            }
+            PlayerManager.Instance.Initialize(players);
+
             accumulator = 0;
             TickCount = 0;
-            isStarted = false;
+            isActivated = false;
         }
 
-        public void StartTime() {
-            isStarted = true;
+        public void Activate() {
+            isActivated = true;
         }
 
+        private List<PlayerData> players { get; set; } = new List<PlayerData>();
         private List<ProjectileData> projectiles = new List<ProjectileData>();
         private List<ProjectileData> willRemoveProjectiles = new List<ProjectileData>();
         private List<ProjectileData> willAddProjectiles = new List<ProjectileData>();
-
-        // temp data
-        private Vector2 playerPos = Vector2.up;
-
-        private ProjectileData BaseProjectile => new ProjectileData {
-            Pos = playerPos,
-            Speed = 13f,
-            Damage = 10f,
-            Radius = 0.3f
-        };
-        private const float PlayerMoveSpeed = 2f;
-        private const float PlayerRadius = 0.5f;
 
         private void Tick() {
             // ===== Receive client's input =====
             Vector2 moveDirection = inputProvider.GetMoveDirection();
             Vector2 attackDirection = inputProvider.CaptureAttackDirection();
 
+            foreach (var player in players) {
+                player.MoveDir = moveDirection;
+                player.AttackDir = attackDirection;
+            }
+
             // ===== Simulate =====
             // 1. 플레이어 움직임
-            if (moveDirection != Vector2.zero) {
-                Vector2 movement = PlayerMoveSpeed * TickThreshold * moveDirection;
-                playerPos = Physics.GetNextPlayerPos(playerPos, movement, PlayerRadius);
+            foreach (var player in players) {
+                if (player.MoveDir == Vector2.zero) continue;
+                Physics.MovePlayer(player, players);
             }
 
             // 2. 투사체 움직임
             foreach (var projectile in projectiles) {
-                Vector2 movement = projectile.Speed * TickThreshold * projectile.Dir;
-                (Vector2 nextPos, bool hitWall) res 
-                    = Physics.SimulateProjectile(projectile.Pos, movement, projectile.Radius);
-
-                projectile.Pos = res.nextPos;
-                if (res.hitWall) {
-                    projectile.IsDestroyed = true;
+                Physics.MoveProjectile(projectile, players);
+                if (projectile.IsDestroyed) {
                     willRemoveProjectiles.Add(projectile);
                 }
             }
 
             // 3. 만들어질 투사체 생성
-            ProjectileData newProjectile = null; 
-            if (attackDirection != Vector2.zero) {
-                newProjectile = BaseProjectile;
+            foreach (var player in players) {
+                if (player.AttackDir == Vector2.zero) continue;
+
+                var newProjectile = ProjectileData.BaseProjectile;
+                newProjectile.OwnerId = player.Id;
+                newProjectile.Pos = player.Pos;
                 newProjectile.Dir = attackDirection;
-                newProjectile.Id = Guid.NewGuid().ToString();
                 willAddProjectiles.Add(newProjectile);
             }
 
             // ===== Send to client =====
             // 1. 플레이어 처리
-            PlayerManager.Instance.Move(playerPos);
-            PlayerManager.Instance.Rotate(moveDirection);
-            if (attackDirection != Vector2.zero) {
-                PlayerManager.Instance.Attack(playerPos, attackDirection);
-            }
+            PlayerManager.Instance.Move(players);
+            PlayerManager.Instance.Attack(players);
 
             // 2. 투사체 처리
             ProjectileManager.Instance.UpdateProjectiles(projectiles);
-            if (newProjectile != null) {
+            foreach (var newProjectile in willAddProjectiles) {
                 ProjectileManager.Instance.Create(newProjectile);
             }
             

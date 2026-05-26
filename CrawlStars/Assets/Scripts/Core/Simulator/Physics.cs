@@ -1,30 +1,60 @@
-﻿using Core.Map;
+﻿using System.Collections.Generic;
+using Core.Map;
+using Core.Player;
+using Core.Projectile;
 using UnityEngine;
 
 namespace Core.Simulator {
     public static class Physics {
-        public static Vector2 GetNextPlayerPos(Vector2 origin, Vector2 movement, float radius) {
-            Vector2 nextX = origin + new Vector2(movement.x, 0f);
-            bool isHorizontalBlocked = CheckWallCollision(nextX, radius);
-            if (!isHorizontalBlocked) {
-                origin = nextX;
+        public static void MovePlayer(PlayerData target, List<PlayerData> players) {
+            if (target == null || players == null) {
+                Debug.LogError("Physics::MovePlayer: target or players is null");
+                return;
             }
 
-            Vector2 nextY = origin + new Vector2(0f, movement.y);
-            bool isVerticalBlocked = CheckWallCollision(nextY, radius);
-            if (!isVerticalBlocked) {
-                origin = nextY;
+            Vector2 movement = target.Speed * Simulator.TickThreshold * target.MoveDir;
+
+            Vector2 nextX = target.Pos + new Vector2(movement.x, 0f);
+            bool isHorizontalBlocked = CheckWallCollision(nextX, target.Radius) ||
+                                       CheckPlayerCollision(nextX, target.Radius, players, target.Id);
+            if (!isHorizontalBlocked) {
+                target.Pos = nextX;
             }
-            return origin;
+
+            Vector2 nextY = target.Pos + new Vector2(0f, movement.y);
+            bool isVerticalBlocked = CheckWallCollision(nextY, target.Radius) ||
+                                     CheckPlayerCollision(nextY, target.Radius, players, target.Id);
+            if (!isVerticalBlocked) {
+                target.Pos = nextY;
+            }
         }
         
-        public static (Vector2 nextPos, bool hitWall) SimulateProjectile(Vector2 origin, Vector2 movement, float radius) {
-            Vector2 nextPos = origin + movement;
-
-            if (CheckWallCollision(nextPos, radius)) {
-                return (origin, true);
+        public static void MoveProjectile(ProjectileData target, List<PlayerData> players) {
+            if (target == null || players == null) {
+                Debug.LogError("Physics::MoveProjectile: target or players is null");
+                return;
             }
-            return (nextPos, false);
+
+            Vector2 movement = target.Speed * Simulator.TickThreshold * target.Dir;
+            target.Pos += movement;
+
+            if (CheckWallCollision(target.Pos, target.Radius) ||
+                CheckPlayerCollision(target.Pos, target.Radius, players, target.OwnerId)) {
+                target.IsDestroyed = true;
+            }
+        }
+
+        private static bool CheckPlayerCollision(Vector2 circleCenter, float radius, List<PlayerData> players, string ignorePlayerId) {
+            foreach (var player in players) {
+                if (player == null || player.IsDead) continue;
+                if (player.Id == ignorePlayerId) continue;
+
+                float minDistance = radius + player.Radius;
+                if ((circleCenter - player.Pos).sqrMagnitude <= minDistance * minDistance) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private static bool CheckWallCollision(Vector2 circleCenter, float radius) {

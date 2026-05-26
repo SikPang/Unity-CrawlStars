@@ -1,11 +1,10 @@
-using System;
 using UnityEngine;
 using Utility;
 
 namespace Core.Map {
     public class Tile : MonoBehaviour {
         public enum TileType {
-            Ground, Wall
+            Ground, Wall, Bush, Water, SpawnPoint
         }
         
         [SerializeField] public SpriteRenderer spriteRenderer;
@@ -23,14 +22,13 @@ namespace Core.Map {
             string spriteName;
 
             switch (tileType) {
-                case TileType.Ground:
-                    spriteName = "Ground";
-                    break;
                 case TileType.Wall:
                     spriteName = "Wall";
                     break;
                 default:
-                    return;
+                case TileType.Ground:
+                    spriteName = "Ground";
+                    break;
             }
 
             var sprite = SpriteCacheHelper.Get(spriteName);
