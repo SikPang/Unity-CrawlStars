@@ -14,7 +14,7 @@ namespace Core.Simulator {
         private bool isActivated;
 
         private const int TickRate = 30;
-        private const float TickThreshold = 1f / TickRate;
+        public const float TickThreshold = 1f / TickRate;
 
         private void Update() {
             if (!isActivated) return;
@@ -55,45 +55,41 @@ namespace Core.Simulator {
             Vector2 moveDirection = inputProvider.GetMoveDirection();
             Vector2 attackDirection = inputProvider.CaptureAttackDirection();
 
+            foreach (var player in players) {
+                player.MoveDir = moveDirection;
+                player.AttackDir = attackDirection;
+            }
+
             // ===== Simulate =====
             // 1. 플레이어 움직임
             foreach (var player in players) {
-                if (moveDirection != Vector2.zero) {
-                    Vector2 movement = player.Speed * TickThreshold * moveDirection;
-                    player.Pos = Physics.GetNextPlayerPos(player.Pos, movement, player.Radius);
-                    player.Dir = moveDirection;
-                }
+                if (player.MoveDir == Vector2.zero) continue;
+                Physics.MovePlayer(player, players);
             }
 
             // 2. 투사체 움직임
             foreach (var projectile in projectiles) {
-                Vector2 movement = projectile.Speed * TickThreshold * projectile.Dir;
-                (Vector2 nextPos, bool hitWall) res 
-                    = Physics.SimulateProjectile(projectile.Pos, movement, projectile.Radius);
-
-                projectile.Pos = res.nextPos;
-                if (res.hitWall) {
-                    projectile.IsDestroyed = true;
+                Physics.MoveProjectile(projectile, players);
+                if (projectile.IsDestroyed) {
                     willRemoveProjectiles.Add(projectile);
                 }
             }
 
             // 3. 만들어질 투사체 생성
             foreach (var player in players) {
-                if (attackDirection != Vector2.zero) {
-                    var newProjectile = ProjectileData.BaseProjectile;
-                    newProjectile.Pos = player.Pos;
-                    newProjectile.Dir = attackDirection;
-                    willAddProjectiles.Add(newProjectile);
-                }
+                if (player.AttackDir == Vector2.zero) continue;
+
+                var newProjectile = ProjectileData.BaseProjectile;
+                newProjectile.OwnerId = player.Id;
+                newProjectile.Pos = player.Pos;
+                newProjectile.Dir = attackDirection;
+                willAddProjectiles.Add(newProjectile);
             }
 
             // ===== Send to client =====
             // 1. 플레이어 처리
             PlayerManager.Instance.Move(players);
-            if (attackDirection != Vector2.zero) {
-                PlayerManager.Instance.Attack(players);
-            }
+            PlayerManager.Instance.Attack(players);
 
             // 2. 투사체 처리
             ProjectileManager.Instance.UpdateProjectiles(projectiles);

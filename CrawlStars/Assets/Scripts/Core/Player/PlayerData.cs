@@ -9,7 +9,8 @@ namespace Core.Player {
         
         public string Id { get; set; }
         public Vector2 Pos { get; set; }
-        public Vector2 Dir { get; set; }
+        public Vector2 MoveDir { get; set; }
+        public Vector2 AttackDir { get; set; }
         public float Speed { get; set; }
         public float Radius { get; set; }
         public PlayerType Type { get; set; }

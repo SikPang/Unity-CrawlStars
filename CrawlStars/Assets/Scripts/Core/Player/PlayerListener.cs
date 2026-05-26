@@ -15,7 +15,8 @@ namespace Core.Player {
         }
 
         public void Attack(Vector2 direction) {
-            
+            if (direction == Vector2.zero) return;
+
             // attack to dir
         }
     }

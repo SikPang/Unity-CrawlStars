@@ -46,11 +46,9 @@ namespace Core.Player {
                     Debug.LogError("PlayerManager.Move::Cannot find Player Object");
                     continue;
                 }
-                Debug.Log(player.Pos);
+                listener.RotateTo(player.MoveDir);
                 listener.MoveTo(player.Pos);
-                listener.RotateTo(player.Dir);
             }
-            Debug.Log("End");
         }
         
         public void Attack(List<PlayerData> players) {
@@ -59,8 +57,8 @@ namespace Core.Player {
                     Debug.LogError("PlayerManager.Attack::Cannot find Player Object");
                     continue;
                 }
-                listener.RotateTo(player.Dir);
-                listener.Attack(player.Dir);
+                listener.RotateTo(player.AttackDir);
+                listener.Attack(player.AttackDir);
             }
         }
     }
