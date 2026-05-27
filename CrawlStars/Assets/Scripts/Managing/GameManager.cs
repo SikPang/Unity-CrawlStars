@@ -7,25 +7,12 @@ using Newtonsoft.Json;
 using System;
 using UnityEngine;
 
-public class GameManager : MonoBehaviour {
+public class GameManager : SingletonMonoBehaviour<GameManager> {
     [SerializeField] private MapRenderer mapRenderer;
     [SerializeField] private Simulator simulator;
     [SerializeField] private NetworkManager networkManager;
 
-    private static GameManager instance;
-    public static GameManager Instance => instance;
-
-    private void Awake() {
-        if (instance != null) {
-            Debug.LogError($"{nameof(GameManager)} Instance가 {name}에서 중복 초기화 시도되었습니다.");
-            return;
-        }
-
-        instance = this;
-        DontDestroyOnLoad(gameObject);
-    }
-
-    public async UniTask Initialize() {
+    public void Initialize() {
         // 네트워크 테스트
         // await TestNetwork();
 
