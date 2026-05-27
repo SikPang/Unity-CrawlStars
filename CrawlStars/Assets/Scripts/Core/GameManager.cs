@@ -3,7 +3,6 @@ using Core.Player;
 using Core.Simulator;
 using Cysharp.Threading.Tasks;
 using Network;
-using Newtonsoft.Json;
 using System;
 using UnityEngine;
 
@@ -23,8 +22,14 @@ public class GameManager : SingletonMonoBehaviour<GameManager> {
         simulator.Initialize();
         simulator.Activate();
     }
-    
-    public async UniTask TestNetwork() {
+
+    public void Dispose() {
+        simulator.Dispose();
+        mapRenderer.Clear();
+        PlayerManager.Instance.ClearListeners();
+    }
+
+    private async UniTask TestNetwork() {
         try {
             // REST API 테스트
             await networkManager.TestRestApiAsync();

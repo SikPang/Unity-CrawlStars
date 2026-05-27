@@ -22,7 +22,7 @@ namespace Managing {
             loadingScreen.gameObject.SetActive(false);
         }
 
-        public async UniTask ChangeSceneAsync(string sceneName, Action beforeActivateAction, Action afterActivateAction) {
+        public async UniTask ChangeSceneAsync(string sceneName, Action beforeActivateAction = null, Action afterActivateAction = null) {
             if (isChangingScene) {
                 Debug.LogWarning($"SceneController.ChangeScene::already changing scene to {sceneName}");
                 return;
@@ -58,7 +58,7 @@ namespace Managing {
             progressText.text = "100%";
 
             // fake loading
-            await UniTask.Delay(300);
+            // await UniTask.Delay(300);
             beforeActivateAction?.Invoke();
 
             op.allowSceneActivation = true;

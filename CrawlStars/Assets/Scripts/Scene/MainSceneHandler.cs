@@ -28,6 +28,7 @@ namespace Managing {
 
         private void OnClickExitButton() {
             Debug.Log("OnClickExitButton");
+            Application.Quit();
         }
     }
 }
