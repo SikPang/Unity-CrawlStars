@@ -25,10 +25,6 @@ public class GameManager : MonoBehaviour {
         DontDestroyOnLoad(gameObject);
     }
 
-    private void Start() {
-        Initialize().Forget();
-    }
-
     public async UniTask Initialize() {
         // 네트워크 테스트
         // await TestNetwork();
