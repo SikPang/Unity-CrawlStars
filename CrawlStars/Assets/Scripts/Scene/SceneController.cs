@@ -10,13 +10,13 @@ using Utility;
 namespace Managing {
     public class SceneController : SingletonMonoBehaviour<SceneController> {
         [SerializeField] private GameObject loadingScreen;
-        [SerializeField] private Image progressBar;
-        [SerializeField] private TextMeshProUGUI progressText;
+        [SerializeField] private ProgressBar progressBar;
 
         public const string PlaySceneName = "Play";
         public const string MainSceneName = "Main";
         
         private bool isChangingScene;
+        private const float FakeLoadingProgress = 0.9f;
 
         private void Start() {
             loadingScreen.gameObject.SetActive(false);
@@ -39,29 +39,27 @@ namespace Managing {
                 return;
             }
 
-            progressBar.fillAmount = 0f;
-            progressText.text = "Loading...";
+            progressBar.Initialize();
             loadingScreen.gameObject.SetActive(true);
 
             op.allowSceneActivation = false;
 
-            while (op.progress < 0.9f) {
+            while (op.progress < FakeLoadingProgress) {
                 float progress = Mathf.Clamp01(op.progress / 0.9f);
-
-                progressBar.fillAmount = progress;
-                progressText.text = $"{progress * 100f:0}%";
-
+                progressBar.SetValue(progress);
                 await UniTask.Yield();
             }
 
-            progressBar.fillAmount = 1f;
-            progressText.text = "100%";
+            beforeActivateAction?.Invoke();
+            op.allowSceneActivation = true;
 
             // fake loading
-            // await UniTask.Delay(300);
-            beforeActivateAction?.Invoke();
-
-            op.allowSceneActivation = true;
+            float fakeProgress = FakeLoadingProgress;
+            while (fakeProgress < 1f) {
+                await UniTask.Delay(50);
+                fakeProgress += 0.01f;
+                progressBar.SetValue(fakeProgress);
+            }
             await UniTask.WaitUntil(() => op.isDone);
 
             // 다음 씬 Activate
