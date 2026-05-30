@@ -95,6 +95,7 @@ namespace Core.Simulator {
             // 1. 플레이어 처리
             PlayerManager.Instance.Move(players);
             PlayerManager.Instance.Attack(players);
+            PlayerManager.Instance.BeingHit(players);
 
             // 2. 투사체 처리
             ProjectileManager.Instance.UpdateProjectiles(projectiles);

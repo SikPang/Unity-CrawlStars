@@ -58,7 +58,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.08376956, g: 1, b: 0, a: 1}
+  m_Color: {r: 0.05470238, g: 0.6415094, b: 0, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -303,9 +303,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b26d262fd48cc641ad580f84957dff0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StatusBar
-  barBg: {fileID: 0}
-  barImage: {fileID: 0}
-  progressText: {fileID: 0}
+  barBg: {fileID: 5132053503403134369}
+  barImage: {fileID: 935633238040853191}
+  progressText: {fileID: 7020410281938643617}
 --- !u!1 &5222090191477531769
 GameObject:
   m_ObjectHideFlags: 0

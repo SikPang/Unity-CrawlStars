@@ -1,4 +1,4 @@
-using Cysharp.Threading.Tasks;
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -17,13 +17,13 @@ public class StatusBar : MonoBehaviour {
         progressText.text = maxValue.ToString();
     }
 
-    public void SetValue(int value) {
-        barBg.fillAmount = value / (float)maxValue;
-        barImage.fillAmount = value / (float)maxValue;
-        progressText.text = value.ToString();
-    }
+    public void SetValue(int from, int to) {
+        progressText.text = to.ToString();
+        barBg.fillAmount = from / (float)maxValue;
 
-    public async UniTask SetValueAsync(int value) {
-        
+        float toPercent = to / (float)maxValue;
+        barImage.fillAmount = toPercent;
+
+        barBg.DOFillAmount(toPercent, 0.5f);
     }
 }
