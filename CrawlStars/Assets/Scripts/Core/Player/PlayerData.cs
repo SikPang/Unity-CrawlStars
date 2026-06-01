@@ -1,4 +1,5 @@
 using System;
+using Newtonsoft.Json;
 using UnityEngine;
 
 namespace Core.Player {
@@ -13,16 +14,19 @@ namespace Core.Player {
         public Vector2 AttackDir { get; set; }
         public float Speed { get; set; }
         public float Radius { get; set; }
+        public int Hp { get; set; }
+        public int ReceivedDamage { get; set; }
         public PlayerType Type { get; set; }
         public bool PressedAttack { get; set; }
-        public bool IsDead { get; set; }
+
+        [JsonIgnore] public bool IsDead => Hp <= 0;
 
         public static PlayerData BasePlayerData => new PlayerData {
             Id = Guid.NewGuid().ToString(),
             Speed = 2f,
             Radius = 0.5f,
-            PressedAttack = false,
-            IsDead = false,
+            Hp = 1000,
+            PressedAttack = false
         };
     }
 }

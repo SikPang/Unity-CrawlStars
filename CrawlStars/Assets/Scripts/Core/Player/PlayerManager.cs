@@ -22,8 +22,10 @@ namespace Core.Player {
                     return;
                 }
 
-                var id = players[i].Id;
-                playerListener.transform.position = (Vector3)players[i].Pos + Vector3.back;
+                var data = players[i];
+                var id = data.Id;
+                playerListener.transform.position = (Vector3)data.Pos + Vector3.back;
+                playerListener.Initialize(data);
                 playerListeners.TryAdd(id, playerListener);
 
                 if (i == 0) {
@@ -59,6 +61,19 @@ namespace Core.Player {
                 }
                 listener.RotateTo(player.MoveDir);
                 listener.MoveTo(player.Pos);
+            }
+        }
+
+        public void BeingHit(List<PlayerData> players) {
+            foreach (var player in players) {
+                if (player.ReceivedDamage <= 0) continue;
+
+                if (!playerListeners.TryGetValue(player.Id, out var listener)) {
+                    Debug.LogError("PlayerManager.Attack::Cannot find Player Object");
+                    continue;
+                }
+                listener.BeingHit(player.Hp, player.ReceivedDamage);
+                player.ReceivedDamage = 0;
             }
         }
         

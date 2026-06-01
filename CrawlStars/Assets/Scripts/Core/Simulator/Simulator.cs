@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Core.Controller;
 using Core.Player;
 using Core.Projectile;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace Core.Simulator {
@@ -29,12 +30,23 @@ namespace Core.Simulator {
         }
 
         public void Initialize() {
-            for (int i = 0; i < 2; ++i) {
-                var player = PlayerData.BasePlayerData;
-                player.Pos = Vector2.up * (i + 1) * 2;
-                players.Add(player);
-            }
+            var player = PlayerData.BasePlayerData;
+            player.Pos = Vector2.up;
+            players.Add(player);
+            
+            player = PlayerData.BasePlayerData;
+            player.Pos = Vector2.up * 2;
+            players.Add(player);
+            
+            player = PlayerData.BasePlayerData;
+            player.Pos = Vector2.up + Vector2.right;
+            players.Add(player);
+
             PlayerManager.Instance.Initialize(players);
+            
+            willRemovePlayers.Clear();
+            willRemoveProjectiles.Clear();
+            willAddProjectiles.Clear();
 
             accumulator = 0;
             TickCount = 0;
@@ -50,7 +62,9 @@ namespace Core.Simulator {
             players.Clear();
         }
 
-        private List<PlayerData> players { get; set; } = new List<PlayerData>();
+        private List<PlayerData> players = new List<PlayerData>();
+        private List<PlayerData> willRemovePlayers = new List<PlayerData>();
+
         private List<ProjectileData> projectiles = new List<ProjectileData>();
         private List<ProjectileData> willRemoveProjectiles = new List<ProjectileData>();
         private List<ProjectileData> willAddProjectiles = new List<ProjectileData>();
@@ -74,15 +88,22 @@ namespace Core.Simulator {
 
             // 2. 투사체 움직임
             foreach (var projectile in projectiles) {
-                Physics.MoveProjectile(projectile, players);
+                var hitPlayer = Physics.MoveProjectile(projectile, players);
+
+                // 플레이어 사망 처리
+                if (hitPlayer != null && hitPlayer.IsDead) {
+                    willRemovePlayers.Add(hitPlayer);
+                }
+
+                // 투사체 제거 처리
                 if (projectile.IsDestroyed) {
                     willRemoveProjectiles.Add(projectile);
                 }
             }
 
-            // 3. 만들어질 투사체 생성
+            // 4. 만들어질 투사체 생성
             foreach (var player in players) {
-                if (player.AttackDir == Vector2.zero) continue;
+                if (player.IsDead || player.AttackDir == Vector2.zero) continue;
 
                 var newProjectile = ProjectileData.BaseProjectile;
                 newProjectile.OwnerId = player.Id;
@@ -95,15 +116,47 @@ namespace Core.Simulator {
             // 1. 플레이어 처리
             PlayerManager.Instance.Move(players);
             PlayerManager.Instance.Attack(players);
+            PlayerManager.Instance.BeingHit(players);
 
             // 2. 투사체 처리
             ProjectileManager.Instance.UpdateProjectiles(projectiles);
             foreach (var newProjectile in willAddProjectiles) {
                 ProjectileManager.Instance.Create(newProjectile);
             }
-            
+
+            // ====== Judgement Game Ending ======
+            int leftPlayerCount = willRemovePlayers.Count - players.Count;
+
+            // 모두 한 틱에 사망하여 공동 승리한 경우
+            if (leftPlayerCount == 0) {
+                isActivated = false;
+                foreach (var winner in players) {
+                    if (winner.Id == PlayerManager.Instance.MyId) {
+                        GameManager.Instance.EndGameAsync(winner.Id == PlayerManager.Instance.MyId).Forget();
+                    }
+                }
+                return;
+            }
+
+            // 사망한 플레이어 패배 처리
+            foreach (var player in willRemovePlayers) {
+                players.Remove(player);
+                if (player.Id == PlayerManager.Instance.MyId) {
+                    GameManager.Instance.EndGameAsync(false).Forget();
+                    return;
+                }
+            }
+            willRemovePlayers.Clear();
+
+            // 최후 1인 승리 처리
+            if (players.Count == 1) {
+                isActivated = false;
+                GameManager.Instance.EndGameAsync(players[0].Id == PlayerManager.Instance.MyId).Forget();
+                return;
+            }
+
             // ===== Post Process =====
-            // 클라에게 지워졌다고 정보를 전송해야 하기 때문
+            // 클라에게 지워졌다고 정보를 전송해야 하기 때문에 전송 이후 틱 마지막에 지움
             foreach (var projectile in willRemoveProjectiles) {
                 projectiles.Remove(projectile);
             }
