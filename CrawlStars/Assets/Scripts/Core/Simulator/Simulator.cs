@@ -143,7 +143,7 @@ namespace Core.Simulator {
 
             if (aliveCount <= 1) {
                 isActivated = false;
-                bool didWin = PlayerManager.Instance.MyId == winner.Id || aliveCount == 0;
+                bool didWin = PlayerManager.Instance.MyId == winner?.Id || aliveCount == 0;
                 GameManager.Instance.EndGameAsync(didWin).Forget();
             }
         }
