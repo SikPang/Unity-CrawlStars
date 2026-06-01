@@ -1,4 +1,5 @@
 using System;
+using Newtonsoft.Json;
 using UnityEngine;
 
 namespace Core.Player {
@@ -17,6 +18,8 @@ namespace Core.Player {
         public int ReceivedDamage { get; set; }
         public PlayerType Type { get; set; }
         public bool PressedAttack { get; set; }
+
+        [JsonIgnore] public bool IsDead => Hp <= 0;
 
         public static PlayerData BasePlayerData => new PlayerData {
             Id = Guid.NewGuid().ToString(),
