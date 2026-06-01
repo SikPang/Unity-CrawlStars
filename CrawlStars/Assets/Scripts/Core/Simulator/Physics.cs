@@ -29,10 +29,10 @@ namespace Core.Simulator {
             }
         }
         
-        public static void MoveProjectile(ProjectileData target, List<PlayerData> players) {
+        public static PlayerData MoveProjectile(ProjectileData target, List<PlayerData> players) {
             if (target == null || players == null) {
                 Debug.LogError("Physics::MoveProjectile: target or players is null");
-                return;
+                return null;
             }
 
             Vector2 movement = target.Speed * Simulator.TickThreshold * target.Dir;
@@ -42,16 +42,19 @@ namespace Core.Simulator {
             if (hitPlayer != null) {
                 hitPlayer.Hp -= target.Damage;
                 hitPlayer.ReceivedDamage = target.Damage;
+                target.IsDestroyed = true;
+                return hitPlayer;
             }
 
-            if (hitPlayer != null || CheckWallCollision(target.Pos, target.Radius)) {
+            if (CheckWallCollision(target.Pos, target.Radius)) {
                 target.IsDestroyed = true;
             }
+            return null;
         }
 
         private static PlayerData GetCollidingPlayer(Vector2 circleCenter, float radius, List<PlayerData> players, string ignorePlayerId) {
             foreach (var player in players) {
-                if (player == null || player.Hp <= 0) continue;
+                if (player == null || player.IsDead) continue;
                 if (player.Id == ignorePlayerId) continue;
 
                 float minDistance = radius + player.Radius;
