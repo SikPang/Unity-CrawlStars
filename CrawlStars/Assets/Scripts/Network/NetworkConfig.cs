@@ -7,10 +7,10 @@ namespace Network {
     public sealed class NetworkConfig {
         private const string ConfigFileName = "network_config.json";
         private const string DefaultRestBaseUrl = "http://localhost:3000";
-        private const string DefaultWebSocketUrl = "ws://localhost:3000/ws";
+        private const string DefaultWebSocketUrlTemplate = "ws://localhost:3000/rooms/{roomID}/players/{playerID}";
 
         public string RestBaseUrl { get; private set; } = DefaultRestBaseUrl;
-        public string WebSocketUrl { get; private set; } = DefaultWebSocketUrl;
+        public string WebSocketUrlTemplate { get; private set; } = DefaultWebSocketUrlTemplate;
 
         public static NetworkConfig Load() {
             string configPath = GetConfigPath();
@@ -37,11 +37,19 @@ namespace Network {
                 config.RestBaseUrl = fileConfig.RestBaseUrl.TrimEnd('/');
             }
 
-            if (!string.IsNullOrWhiteSpace(fileConfig?.WebSocketUrl)) {
-                config.WebSocketUrl = fileConfig.WebSocketUrl;
+            if (!string.IsNullOrWhiteSpace(fileConfig?.WebSocketUrlTemplate)) {
+                config.WebSocketUrlTemplate = fileConfig.WebSocketUrlTemplate;
+            } else if (!string.IsNullOrWhiteSpace(fileConfig?.WebSocketUrl)) {
+                config.WebSocketUrlTemplate = fileConfig.WebSocketUrl;
             }
 
             return config;
+        }
+
+        public string GetWebSocketUrl(string roomID, string playerID) {
+            return WebSocketUrlTemplate
+                .Replace("{roomID}", Uri.EscapeDataString(roomID))
+                .Replace("{playerID}", Uri.EscapeDataString(playerID));
         }
 
         private static string GetConfigPath() {
@@ -54,6 +62,9 @@ namespace Network {
 
             [JsonProperty("websocketUrl")]
             public string WebSocketUrl { get; set; }
+
+            [JsonProperty("websocketUrlTemplate")]
+            public string WebSocketUrlTemplate { get; set; }
         }
     }
 }

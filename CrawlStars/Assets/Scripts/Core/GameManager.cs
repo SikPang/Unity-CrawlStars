@@ -41,11 +41,15 @@ public class GameManager : SingletonMonoBehaviour<GameManager> {
     private async UniTask TestNetwork() {
         try {
             // REST API 테스트
-            await networkManager.TestRestApiAsync();
+            NetworkTestSession session = await networkManager.TestRestApiAsync();
 
             // 웹소켓 테스트
-            await networkManager.ConnectSocketAsync();
-            await networkManager.SendSocketJsonAsync(new { type = "PING" });
+            await networkManager.ConnectSocketAsync(session.RoomID, session.PlayerID);
+            await networkManager.SendSocketJsonAsync(new InputMessage {
+                MoveDir = new NetworkVector2 { X = 1f, Y = 0f },
+                AttackDir = new NetworkVector2 { X = 1f, Y = 0f },
+                PressedAttack = false
+            });
         } catch (Exception exception) {
             Debug.LogError(exception);
         }

@@ -1,3 +1,4 @@
+using System;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
@@ -24,12 +25,12 @@ namespace Network {
             Rest.SetJwtToken(accessToken);
         }
 
-        public async UniTask ConnectSocketAsync() {
+        public async UniTask ConnectSocketAsync(string roomID, string playerID) {
             if (socket != null) {
                 await socket.DisconnectAsync();
             }
 
-            socket = new WebSocketClient(config.WebSocketUrl);
+            socket = new WebSocketClient(config.GetWebSocketUrl(roomID, playerID));
             RegisterSocketLogHandlers(socket);
             socket.Connect(jwtAccessToken);
         }
@@ -51,23 +52,29 @@ namespace Network {
             socketClient.Closed += closeCode => Debug.Log($"WebSocket Closed: {closeCode}");
         }
 
-        public async UniTask TestRestApiAsync() {
+        public async UniTask<NetworkTestSession> TestRestApiAsync() {
             HealthResponse health = await Rest.GetAsync<HealthResponse>("health");
-            Debug.Log($"REST Health: ok={health.Ok}, message={health.Message}");
+            Debug.Log($"REST Health: status={health.Status}, service={health.Service}");
 
-            LoginResponse login = await Rest.PostAsync<LoginRequest, LoginResponse>(
-                "auth/login",
-                new LoginRequest {
-                    Email = "test@example.com",
-                    Password = "password"
-                }
-            );
+            RoomListResponse roomList = await Rest.GetAsync<RoomListResponse>("rooms");
+            Debug.Log($"REST Rooms: count={roomList?.Rooms?.Length ?? 0}");
 
-            SetJwtToken(login.AccessToken);
-            Debug.Log($"REST Login: userId={login.UserId}, nickname={login.Nickname}");
+            RoomResponse createdRoom = await Rest.PostAsync<object, RoomResponse>("rooms", null);
+            if (string.IsNullOrEmpty(createdRoom?.Id)) {
+                throw new InvalidOperationException("REST CreateRoom failed: room id is empty.");
+            }
+            Debug.Log($"REST CreateRoom: id={createdRoom.Id}, status={createdRoom.Status}");
 
-            UserResponse me = await Rest.GetAsync<UserResponse>("users/me");
-            Debug.Log($"REST UsersMe: id={me.Id}, email={me.Email}, nickname={me.Nickname}, level={me.Level}");
+            PlayerResponse player = await Rest.PostAsync<object, PlayerResponse>($"rooms/{createdRoom.Id}/players", null);
+            Debug.Log($"REST CreateRoomPlayer: id={player.Id}, team={player.Team}, slot={player.Slot}");
+
+            RoomResponse room = await Rest.GetAsync<RoomResponse>($"rooms/{createdRoom.Id}");
+            Debug.Log($"REST GetRoom: id={room.Id}, status={room.Status}, players={room.Players?.Length ?? 0}");
+
+            RoomResponse startedRoom = await Rest.PostAsync<object, RoomResponse>($"rooms/{createdRoom.Id}/start", null);
+            Debug.Log($"REST StartRoom: id={startedRoom.Id}, status={startedRoom.Status}, tick={startedRoom.LatestSnapshot?.Tick ?? 0}");
+
+            return new NetworkTestSession(createdRoom.Id, player.Id);
         }
 #endregion
     }
