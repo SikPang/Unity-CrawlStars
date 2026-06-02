@@ -4,6 +4,7 @@ using Core.Simulator;
 using Cysharp.Threading.Tasks;
 using Network;
 using System;
+using System.Threading;
 using Core.Projectile;
 using Managing;
 using Popup;
@@ -15,9 +16,6 @@ public class GameManager : SingletonMonoBehaviour<GameManager> {
     [SerializeField] private NetworkManager networkManager;
 
     public void Initialize() {
-        // 네트워크 테스트
-        TestNetwork().Forget();
-
         // 맵 인덱스
         mapRenderer.Render(0);
         
@@ -31,6 +29,7 @@ public class GameManager : SingletonMonoBehaviour<GameManager> {
         mapRenderer.Clear();
         PlayerManager.Instance.ClearListeners();
         ProjectileManager.Instance.ClearListener();
+        CancelMatch();
     }
 
     public async UniTask EndGameAsync(bool didWin) {
@@ -43,13 +42,14 @@ public class GameManager : SingletonMonoBehaviour<GameManager> {
 
     public void SetActiveInput(bool isActive) => simulator.SetActiveInput(isActive);
 
-    private async UniTask TestNetwork() {
+    public async UniTask MatchAsync(CancellationToken ct) {
         try {
             // REST API 테스트
             NetworkTestSession session = await networkManager.TestRestApiAsync();
+            if (ct.IsCancellationRequested) return;
 
             // 웹소켓 테스트
-            await networkManager.ConnectSocketAsync(session.RoomID, session.PlayerID);
+            networkManager.ConnectSocket(session.RoomID, session.PlayerID);
             await networkManager.SendSocketJsonAsync(new InputMessage {
                 MoveDir = new NetworkVector2 { X = 1f, Y = 0f },
                 AttackDir = new NetworkVector2 { X = 1f, Y = 0f },
@@ -58,5 +58,9 @@ public class GameManager : SingletonMonoBehaviour<GameManager> {
         } catch (Exception exception) {
             Debug.LogError(exception);
         }
+    }
+
+    public void CancelMatch() {
+        networkManager.DisconnectSocket();
     }
 }

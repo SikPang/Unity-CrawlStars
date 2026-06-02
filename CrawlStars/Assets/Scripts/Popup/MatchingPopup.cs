@@ -21,19 +21,24 @@ namespace Popup {
         private async UniTask StartMatching(CancellationToken ct) {
             float progress = 0f;
 
-            while (progress < 1f) {
+            var matchTask = GameManager.Instance.MatchAsync(ct);
+            while (!matchTask.GetAwaiter().IsCompleted) {
                 await UniTask.Delay(100);
-                if (ct.IsCancellationRequested) return;
+                if (ct.IsCancellationRequested) {
+                    GameManager.Instance.CancelMatch();
+                    return;
+                }
 
                 progress += 0.1f;
-                progressBar.SetValue(progress);
+                progressBar.SetValue(Mathf.Clamp(progress, 0f, 0.95f));
             }
+            progressBar.SetValue(1f);
 
             SceneController.Instance.ChangeSceneAsync(SceneController.PlaySceneName,
                 GameManager.Instance.Initialize,
                 PlayerManager.Instance.FocusCamera).Forget();
 
-            RequestClosing();
+            RequestPopupClosing();
         }
 
         public override void Dispose(Result result = null) {
