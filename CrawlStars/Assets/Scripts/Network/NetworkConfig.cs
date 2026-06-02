@@ -4,13 +4,11 @@ using Newtonsoft.Json;
 using UnityEngine;
 
 namespace Network {
-    public sealed class NetworkConfig {
+    public class NetworkConfig {
         private const string ConfigFileName = "network_config.json";
-        private const string DefaultRestBaseUrl = "http://localhost:3000";
-        private const string DefaultWebSocketUrlTemplate = "ws://localhost:3000/rooms/{roomID}/players/{playerID}";
 
-        public string RestBaseUrl { get; private set; } = DefaultRestBaseUrl;
-        public string WebSocketUrlTemplate { get; private set; } = DefaultWebSocketUrlTemplate;
+        public string RestBaseUrl { get; private set; }
+        public string WebSocketUrlTemplate { get; private set; }
 
         public static NetworkConfig Load() {
             string configPath = GetConfigPath();
