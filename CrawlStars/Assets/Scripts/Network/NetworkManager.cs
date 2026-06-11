@@ -22,6 +22,11 @@ namespace Network {
             socketClient?.DispatchMessageQueue();
         }
 
+        private void OnApplicationQuit() {
+            socketClient?.Abort();
+            socketClient = null;
+        }
+
         public void Initialize() {
             config = NetworkConfig.Load();
             if (config != null) {

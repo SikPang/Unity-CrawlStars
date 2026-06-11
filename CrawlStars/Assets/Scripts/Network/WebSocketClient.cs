@@ -104,6 +104,18 @@ namespace Network {
             }
         }
 
+        public void Abort() {
+            WebSocket targetSocket = socket;
+            if (targetSocket == null) return;
+
+            pendingMessages.Clear();
+            UnregisterEvents(targetSocket);
+            socket = null;
+
+            targetSocket.CancelConnection();
+            Closed?.Invoke(WebSocketCloseCode.Abnormal);
+        }
+
         private static void LogUnexpectedCloseError(Exception exception, string context) {
             if (exception is System.Net.WebSockets.WebSocketException webSocketException &&
                 webSocketException.WebSocketErrorCode ==
