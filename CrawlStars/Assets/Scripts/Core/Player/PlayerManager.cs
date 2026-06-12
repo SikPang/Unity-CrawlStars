@@ -48,7 +48,7 @@ namespace Core.Player {
                     continue;
                 }
 
-                if (player.IsDead) {
+                if (!player.IsDead) {
                     ObjectPooling.Instance.TryAbandon(Constants.Player, listener.gameObject);
                     playerListeners.Remove(player.Id);
                     
@@ -66,6 +66,8 @@ namespace Core.Player {
                     listener.RotateTo(player.AttackDir.ToVector2());
                     listener.Attack(player.AttackDir.ToVector2());
                 }
+                
+                listener.BeingHit(player.Hp);
             }
         }
 

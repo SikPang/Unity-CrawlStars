@@ -31,8 +31,8 @@ namespace Core.Player {
             // attack to dir
         }
 
-        public void BeingHit(int hp, int receivedDamage) {
-            hpBar.SetValue(hp + receivedDamage, hp);
+        public void BeingHit(int hp) {
+            hpBar.MoveValue(hp);
         }
     }
 }

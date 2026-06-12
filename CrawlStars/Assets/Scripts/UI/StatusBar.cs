@@ -17,9 +17,8 @@ public class StatusBar : MonoBehaviour {
         progressText.text = maxValue.ToString();
     }
 
-    public void SetValue(int from, int to) {
+    public void MoveValue(int to) {
         progressText.text = to.ToString();
-        barBg.fillAmount = from / (float)maxValue;
 
         float toPercent = to / (float)maxValue;
         barImage.fillAmount = toPercent;
