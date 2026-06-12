@@ -1,4 +1,5 @@
 using System;
+using System.Net;
 using System.Threading;
 using Core.Player;
 using Cysharp.Threading.Tasks;
@@ -10,6 +11,7 @@ namespace Network {
         private NetworkConfig config;
         private WebSocketClient socketClient;
         private string jwtAccessToken;
+        private UniTask initializationTask;
 
         public RestApiClient RestClient { get; private set; }
         public bool IsInitialized { get; private set; }
@@ -19,7 +21,8 @@ namespace Network {
 
         protected override void Awake() {
             base.Awake();
-            Initialize();
+            initializationTask = InitializeAsync().Preserve();
+            initializationTask.Forget();
         }
 
         private void Update() {
@@ -31,8 +34,8 @@ namespace Network {
             socketClient = null;
         }
 
-        public void Initialize() {
-            config = NetworkConfig.Load();
+        private async UniTask InitializeAsync() {
+            config = await NetworkConfig.LoadAsync();
             if (config != null) {
                 RestClient = new RestApiClient(config.RestBaseUrl);
             }
@@ -87,10 +90,17 @@ namespace Network {
         }
 
         public async UniTask<MatchDto> MatchAsync(CancellationToken ct) {
+            await initializationTask;
+            ct.ThrowIfCancellationRequested();
+            if (!IsInitialized) {
+                throw new InvalidOperationException("NetworkManager initialization failed.");
+            }
+
+            IsMatched = false;
             MatchDto dto = await RestClient.PostAsync<object, MatchDto>("matchmaking/join", null);
             if (dto == null) {
                 Debug.LogError("NetworkManager.MatchAsync::response of matchmaking is null");
-                return null;
+                throw new WebException("matchmaking response is null");
             }
             Debug.Log($"Room Id: {dto.Room.Id}, Status: {dto.Room.Status}, MaxPlayers: {dto.Room.MaxPlayers}");
             Debug.Log($"My Id: {dto.Player.Id}, Slot: {dto.Player.Slot}, Team: {dto.Player.Team}");
@@ -118,8 +128,6 @@ namespace Network {
 
         private void HandleSocketMessage(string message) {
             try {
-                IsMatched = true;
-
                 var envelope = JsonConvert.DeserializeObject<MessageEnvelope>(message);
                 switch (envelope?.Type) {
                     case "snapshot":
@@ -129,6 +137,7 @@ namespace Network {
                             return;
                         }
                         SnapshotReceived?.Invoke(snapshotMessage.Snapshot);
+                        IsMatched = true;
                         break;
                     case "error":
                         var errorMessage = JsonConvert.DeserializeObject<ErrorMessageDto>(message);

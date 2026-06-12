@@ -35,5 +35,5 @@ public class GameManager : SingletonMonoBehaviour<GameManager> {
         SceneController.Instance.ChangeSceneAsync(SceneController.MainSceneName, Dispose).Forget();
     }
 
-    public void SetActiveInput(bool isActive) => clientGameLoop.SetActive(isActive);
+    public void SetActiveInput(bool isActive) => clientGameLoop.SetActiveInput(isActive);
 }

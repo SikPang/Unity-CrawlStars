@@ -1,7 +1,9 @@
 using System;
 using System.IO;
+using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
 using UnityEngine;
+using UnityEngine.Networking;
 
 namespace Network {
     public class NetworkConfig {
@@ -10,16 +12,17 @@ namespace Network {
         public string RestBaseUrl { get; private set; }
         public string WebSocketUrl { get; private set; }
 
-        public static NetworkConfig Load() {
-            string configPath = GetConfigPath();
-
-            if (!File.Exists(configPath)) {
-                Debug.LogError($"NetworkConfig.Load::config file not found. path={configPath}");
-                return null;
-            }
-
+        public static async UniTask<NetworkConfig> LoadAsync() {
+            string configUrl = GetConfigUrl();
             try {
-                string json = File.ReadAllText(configPath);
+                using var request = UnityWebRequest.Get(configUrl);
+                await request.SendWebRequest();
+                if (request.result != UnityWebRequest.Result.Success) {
+                    Debug.LogError($"NetworkConfig.LoadAsync::failed to load config. url={configUrl}, error={request.error}");
+                    return null;
+                }
+
+                string json = request.downloadHandler.text;
                 var fileConfig = JsonConvert.DeserializeObject<NetworkConfigFile>(json);
                 
                 var config = new NetworkConfig();
@@ -31,15 +34,16 @@ namespace Network {
                 }
                 return config;
             } catch (Exception e) {
-                Debug.LogError($"NetworkConfig.Load::failed to load config. {e.Message}");
+                Debug.LogError($"NetworkConfig.LoadAsync::failed to load config. {e.Message}");
                 return null;
             }
         }
 
         public string GetWebSocketUrl(string path) => $"{WebSocketUrl}{path}";
 
-        private static string GetConfigPath() {
-            return Path.Combine(Application.streamingAssetsPath, ConfigFileName);
+        private static string GetConfigUrl() {
+            string path = Path.Combine(Application.streamingAssetsPath, ConfigFileName);
+            return path.Contains("://") ? path : new Uri(path).AbsoluteUri;
         }
 
         private sealed class NetworkConfigFile {

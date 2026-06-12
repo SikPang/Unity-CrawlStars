@@ -56,6 +56,10 @@ namespace Core.Controller {
             }
 
             this.isActive = isActive;
+            SetActiveInput(isActive);
+        }
+
+        public void SetActiveInput(bool isActive) {
             inputProvider.IsActivated = isActive;
         }
         
