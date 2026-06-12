@@ -3,6 +3,7 @@ using CameraControl;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using Utility;
+using Cache = Utility.Cache;
 
 namespace Core.Player {
     public class PlayerManager {
@@ -23,7 +24,7 @@ namespace Core.Player {
                     continue;
                 }
 
-                var listener = ObjectPooling.Instance.Get<PlayerListener>("Player");
+                var listener = ObjectPooling.Instance.Get<PlayerListener>(Constants.Player);
                 if (listener == null) continue;
 
                 listener.Initialize(player);
@@ -48,7 +49,7 @@ namespace Core.Player {
                 }
 
                 if (player.IsDead) {
-                    ObjectPooling.Instance.TryAbandon("Player", listener.gameObject);
+                    ObjectPooling.Instance.TryAbandon(Constants.Player, listener.gameObject);
                     playerListeners.Remove(player.Id);
                     
                     // 내가 죽었을 때, 추후 서버로부터 메시지 받는 것으로..
@@ -74,15 +75,15 @@ namespace Core.Player {
                 return;
             }
 
-            CommonCache.CameraController.TargetPlayer = myListener.transform;
+            Cache.CameraController.TargetPlayer = myListener.transform;
         }
 
         public void ClearListeners() {
             foreach (var playerListener in playerListeners) {
-                ObjectPooling.Instance.TryAbandon("Player", playerListener.Value.gameObject);
+                ObjectPooling.Instance.TryAbandon(Constants.Player, playerListener.Value.gameObject);
             }
             playerListeners.Clear();
-            CommonCache.CameraController.TargetPlayer = null;
+            Cache.CameraController.TargetPlayer = null;
             myListener = null;
         }
     }

@@ -17,7 +17,6 @@ namespace Core.Player {
         [JsonProperty("Radius")] public float Radius { get; set; }
         [JsonProperty("PressedAttack")] public bool PressedAttack { get; set; }
         public int Hp { get; set; }
-        public int ReceivedDamage { get; set; }
         public PlayerType Type { get; set; }
 
         [JsonIgnore] public bool IsDead => Hp <= 0;

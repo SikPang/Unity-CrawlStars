@@ -22,9 +22,7 @@ namespace Core.Controller {
         }
 
         private void OnDestroy() {
-            if (NetworkManager.Instance != null) {
-                NetworkManager.Instance.SnapshotReceived -= HandleSnapshot;
-            }
+            NetworkManager.Instance.SnapshotReceived -= HandleSnapshot;
         }
 
         private void Update() {
@@ -32,30 +30,28 @@ namespace Core.Controller {
 
             accumulator += Time.deltaTime;
             if (accumulator >= InputInterval) {
-                SendInputAsync().Forget(e => Debug.LogError($"ClientGameLoop.SendInputAsync::{e.Message}"));
+                SendInputAsync().Forget();
                 accumulator -= InputInterval;
             }
         }
 
         public bool Initialize() {
-            if (latestSnapshot == null) {
+            if (isInitialized) return false;
+
+            if (latestSnapshot == null || latestSnapshot.Players == null) {
                 Debug.LogError("ClientGameLoop.Initialize::snapshot is not received.");
                 return false;
             }
 
-            PlayerManager.Instance.Initialize(
-                latestSnapshot.Players ?? Array.Empty<PlayerData>()
-            );
-            ProjectileManager.Instance.Initialize(
-                latestSnapshot.Projectiles ?? Array.Empty<ProjectileData>()
-            );
+            PlayerManager.Instance.Initialize(latestSnapshot.Players);
+            ProjectileManager.Instance.Initialize(latestSnapshot.Projectiles);
             isInitialized = true;
             return true;
         }
 
         public void SetActive(bool isActive) {
             if (isActive && !isInitialized) {
-                Debug.LogError("ClientGameLoop.SetActive::not initialized.");
+                Debug.LogError("ClientGameLoop.SetActive::Not initialized.");
                 return;
             }
 
@@ -73,7 +69,8 @@ namespace Core.Controller {
         private UniTask SendInputAsync() {
             Vector2 moveDirection = inputProvider.GetMoveDirection();
             Vector2 attackDirection = inputProvider.CaptureAttackDirection();
-            return NetworkManager.Instance.SendSocketJsonAsync(new InputMessage {
+
+            return NetworkManager.Instance.SendSocketJsonAsync(new InputMessageDto {
                 MoveDir = new Vector2Dto(moveDirection),
                 AttackDir = new Vector2Dto(attackDirection),
                 PressedAttack = attackDirection != Vector2.zero
@@ -83,13 +80,13 @@ namespace Core.Controller {
         private void HandleSnapshot(SnapshotDto snapshot) {
             latestSnapshot = snapshot;
 
-            if (!isInitialized || !isActive) return;
-            if (snapshot.Players == null) {
-                Debug.LogError("ClientGameLoop.HandleSnapshot::Players is not received.");
+            if (!isInitialized || !isActive) {
+                Debug.LogWarning("ClientGameLoop.HandleSnapshot::Not initialized.");
                 return;
             }
-            if (snapshot.Projectiles == null) {
-                Debug.LogError("ClientGameLoop.HandleSnapshot::Projectiles is not received.");
+
+            if (snapshot.Players == null || snapshot.Projectiles == null) {
+                Debug.LogWarning($"ClientGameLoop.HandleSnapshot::Data of snapshot is null/{snapshot.Players}/{snapshot.Projectiles}");
                 return;
             }
 

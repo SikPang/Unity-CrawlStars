@@ -4,26 +4,26 @@ using Core.Projectile;
 using UnityEngine;
 
 namespace Network {
-    public class MatchResponse {
-        [JsonProperty("room")] public RoomResponse Room { get; set; }
-        [JsonProperty("player")] public PlayerResponse Player { get; set; }
+    public class MatchDto {
+        [JsonProperty("room")] public RoomDto Room { get; set; }
+        [JsonProperty("player")] public PlayerDto Player { get; set; }
         [JsonProperty("webSocketPath")] public string WebSocketPath { get; set; }
     }
 
-    public class RoomResponse {
+    public class RoomDto {
         [JsonProperty("id")] public string Id { get; set; }
         [JsonProperty("status")] public string Status { get; set; }
-        [JsonProperty("players")] public PlayerResponse[] Players { get; set; }
+        [JsonProperty("players")] public PlayerDto[] Players { get; set; }
         [JsonProperty("maxPlayers")] public int MaxPlayers { get; set; }
         [JsonProperty("latestSnapshot")] public SnapshotDto LatestSnapshot { get; set; }
     }
 
-    public class SnapshotMessage {
+    public class SnapshotMessageDto {
         [JsonProperty("Type")] public string Type { get; set; }
         [JsonProperty("Snapshot")] public SnapshotDto Snapshot { get; set; }
     }
 
-    public class ErrorMessage {
+    public class ErrorMessageDto {
         [JsonProperty("Type")] public string Type { get; set; }
         [JsonProperty("Error")] public ApiErrorDto Error { get; set; }
     }
@@ -39,13 +39,13 @@ namespace Network {
         [JsonProperty("Projectiles")] public ProjectileData[] Projectiles { get; set; }
     }
 
-    public class PlayerResponse {
+    public class PlayerDto {
         [JsonProperty("id")] public string Id { get; set; }
         [JsonProperty("team")] public string Team { get; set; }
         [JsonProperty("slot")] public int Slot { get; set; }
     }
 
-    public class InputMessage {
+    public class InputMessageDto {
         [JsonProperty("MoveDir")] public Vector2Dto MoveDir { get; set; }
         [JsonProperty("AttackDir")] public Vector2Dto AttackDir { get; set; }
         [JsonProperty("PressedAttack")] public bool PressedAttack { get; set; }
@@ -55,36 +55,25 @@ namespace Network {
         [JsonProperty("x")] public float X { get; set; }
         [JsonProperty("y")] public float Y { get; set; }
 
-        public Vector2Dto() {
-        }
+        public Vector2Dto() { }
 
-        public Vector2Dto(UnityEngine.Vector2 vector) {
+        public Vector2Dto(Vector2 vector) {
             X = vector.x;
             Y = vector.y;
         }
 
-        public Vector2 ToVector2() => new(X, Y);
+        public Vector2 ToVector2() => new Vector2(X, Y);
     }
 
 #region Test
 
-    public readonly struct NetworkTestSession {
-        public readonly string RoomID;
-        public readonly string PlayerID;
-
-        public NetworkTestSession(string roomID, string playerID) {
-            RoomID = roomID;
-            PlayerID = playerID;
-        }
-    }
-
-    public sealed class HealthResponse {
+    public sealed class HealthDto {
         [JsonProperty("status")] public string Status { get; set; }
         [JsonProperty("service")] public string Service { get; set; }
     }
 
-    public sealed class RoomListResponse {
-        [JsonProperty("rooms")] public RoomResponse[] Rooms { get; set; }
+    public sealed class RoomListDto {
+        [JsonProperty("rooms")] public RoomDto[] Rooms { get; set; }
     }
 
 #endregion

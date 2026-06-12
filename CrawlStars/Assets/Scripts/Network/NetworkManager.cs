@@ -86,30 +86,24 @@ namespace Network {
             await socketClient.SendJsonAsync(message);
         }
 
-        public async UniTask<MatchResponse> MatchAsync(CancellationToken ct) {
-            MatchResponse response = await RestClient.PostAsync<object, MatchResponse>("matchmaking/join", null);
-            if (response == null) {
+        public async UniTask<MatchDto> MatchAsync(CancellationToken ct) {
+            MatchDto dto = await RestClient.PostAsync<object, MatchDto>("matchmaking/join", null);
+            if (dto == null) {
                 Debug.LogError("NetworkManager.MatchAsync::response of matchmaking is null");
                 return null;
             }
-            Debug.Log($"Room Id: {response.Room.Id}, Status: {response.Room.Status}, MaxPlayers: {response.Room.MaxPlayers}");
-            Debug.Log($"My Id: {response.Player.Id}, Slot: {response.Player.Slot}, Team: {response.Player.Team}");
-            PlayerManager.Instance.MyId = response.Player.Id;
+            Debug.Log($"Room Id: {dto.Room.Id}, Status: {dto.Room.Status}, MaxPlayers: {dto.Room.MaxPlayers}");
+            Debug.Log($"My Id: {dto.Player.Id}, Slot: {dto.Player.Slot}, Team: {dto.Player.Team}");
+            PlayerManager.Instance.MyId = dto.Player.Id;
             ct.ThrowIfCancellationRequested();
 
             // 방 입장
-            await ConnectSocketAsync(response.WebSocketPath, ct);
+            await ConnectSocketAsync(dto.WebSocketPath, ct);
             ct.ThrowIfCancellationRequested();
 
             // 다른 유저 기다리기
             await UniTask.WaitUntil(() => IsMatched, cancellationToken: ct);
-
-            // await SendSocketJsonAsync(new InputMessage {
-            //     MoveDir = new NetworkVector2 { X = 1f, Y = 0f },
-            //     AttackDir = new NetworkVector2 { X = 1f, Y = 0f },
-            //     PressedAttack = false
-            // });
-            return response;
+            return dto;
         }
 
         private void RegisterSocketLogEvents(WebSocketClient socketClient) {
@@ -129,13 +123,15 @@ namespace Network {
                 var envelope = JsonConvert.DeserializeObject<MessageEnvelope>(message);
                 switch (envelope?.Type) {
                     case "snapshot":
-                        var snapshotMessage = JsonConvert.DeserializeObject<SnapshotMessage>(message);
-                        if (snapshotMessage?.Snapshot != null) {
-                            SnapshotReceived?.Invoke(snapshotMessage.Snapshot);
+                        var snapshotMessage = JsonConvert.DeserializeObject<SnapshotMessageDto>(message);
+                        if (snapshotMessage?.Snapshot == null) {
+                            Debug.LogWarning($"NetworkManager.HandleSocketMessage::message snapshot is null");
+                            return;
                         }
+                        SnapshotReceived?.Invoke(snapshotMessage.Snapshot);
                         break;
                     case "error":
-                        var errorMessage = JsonConvert.DeserializeObject<ErrorMessage>(message);
+                        var errorMessage = JsonConvert.DeserializeObject<ErrorMessageDto>(message);
                         Debug.LogError($"WebSocket API Error: {errorMessage?.Error?.Code}/{errorMessage?.Error?.Message}");
                         break;
                 }

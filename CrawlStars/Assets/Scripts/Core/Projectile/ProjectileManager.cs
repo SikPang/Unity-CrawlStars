@@ -21,14 +21,14 @@ namespace Core.Projectile {
                     if (projectile.IsDestroyed) continue;
 
                     // 살아있는데 없으면 새로 생겨난 것
-                    listener = ObjectPooling.Instance.Get<ProjectileListener>("Projectile");
+                    listener = ObjectPooling.Instance.Get<ProjectileListener>(Constants.Projectile);
                     if (listener == null) continue;
 
                     projectileListeners.Add(projectile.Id, listener);
                 }
 
                 if (projectile.IsDestroyed) {
-                    ObjectPooling.Instance.TryAbandon("Projectile", listener.gameObject);
+                    ObjectPooling.Instance.TryAbandon(Constants.Projectile, listener.gameObject);
                     projectileListeners.Remove(projectile.Id);
                     continue;
                 }
@@ -40,7 +40,7 @@ namespace Core.Projectile {
 
         public void ClearListener() {
             foreach (var projectile in projectileListeners) {
-                ObjectPooling.Instance.TryAbandon("Projectile", projectile.Value.gameObject);
+                ObjectPooling.Instance.TryAbandon(Constants.Projectile, projectile.Value.gameObject);
             }
             projectileListeners.Clear();
         }
