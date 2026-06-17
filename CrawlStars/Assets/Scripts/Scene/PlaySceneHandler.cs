@@ -12,10 +12,12 @@ namespace Scene {
         protected override void Start() {
             base.Start();
             GameManager.Instance.RegisterInputAction(benchMarker.OnPressKey);
+            NetworkManager.Instance.SnapshotReceived += benchMarker.OnReceiveSnapshot;
         }
 
         private void OnDestroy() {
             GameManager.Instance.UnregisterInputAction(benchMarker.OnPressKey);
+            NetworkManager.Instance.SnapshotReceived -= benchMarker.OnReceiveSnapshot;
         }
 
         protected override async UniTask ClickLeaveInternal() {
