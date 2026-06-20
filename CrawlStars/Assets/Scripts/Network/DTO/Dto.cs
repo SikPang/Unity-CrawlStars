@@ -1,3 +1,4 @@
+using Core.Map;
 using Newtonsoft.Json;
 using Core.Player;
 using Core.Projectile;
@@ -12,10 +13,15 @@ namespace Network {
 
     public class RoomDto {
         [JsonProperty("id")] public string Id { get; set; }
-        [JsonProperty("status")] public string Status { get; set; }
         [JsonProperty("players")] public PlayerDto[] Players { get; set; }
         [JsonProperty("maxPlayers")] public int MaxPlayers { get; set; }
-        [JsonProperty("latestSnapshot")] public SnapshotDto LatestSnapshot { get; set; }
+        [JsonProperty("map")] public MapData Map { get; set; }
+    }
+
+    public class StatusDto {
+        [JsonProperty("Type")] public string Type { get; set; }
+        [JsonProperty("Type")] public string Status { get; set; }
+        [JsonProperty("Snapshot")] public SnapshotDto Snapshot { get; set; }
     }
 
     public class SnapshotMessageDto {
@@ -42,7 +48,7 @@ namespace Network {
     public class PlayerDto {
         [JsonProperty("id")] public string Id { get; set; }
         [JsonProperty("team")] public string Team { get; set; }
-        [JsonProperty("slot")] public int Slot { get; set; }
+        [JsonProperty("slot")] public int Slot { get; set; } // 순서
     }
 
     public class InputMessageDto {

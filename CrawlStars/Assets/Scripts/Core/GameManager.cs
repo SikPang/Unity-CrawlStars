@@ -13,8 +13,8 @@ public class GameManager : SingletonMonoBehaviour<GameManager> {
     [SerializeField] private MapRenderer mapRenderer;
     [SerializeField] private ClientGameLoop clientGameLoop;
 
-    public void Initialize() {
-        mapRenderer.Render(0);
+    public void Initialize(RoomDto roomResponse) {
+        mapRenderer.Render(roomResponse.Map);
         if (clientGameLoop.Initialize()) {
             clientGameLoop.SetActive(true);
         }

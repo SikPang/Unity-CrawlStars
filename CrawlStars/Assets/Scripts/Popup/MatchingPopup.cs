@@ -35,9 +35,10 @@ namespace Popup {
                 progressBar.SetValue(Mathf.Clamp(progress, 0f, 0.95f));
             }
             
+            MatchDto response = null;
+            // 예외 잡기용 try-catch
             try {
-                // 예외 잡기용
-                await matchTask;
+                response = await matchTask;
             } catch (Exception ex) {
                 await NetworkManager.Instance.DisconnectSocketAsync();
                 if (ex is not OperationCanceledException) {
@@ -50,7 +51,7 @@ namespace Popup {
             progressBar.SetValue(1f);
 
             SceneController.Instance.ChangeSceneAsync(SceneController.PlaySceneName,
-                GameManager.Instance.Initialize,
+                () => GameManager.Instance.Initialize(response.Room),
                 PlayerManager.Instance.FocusCamera).Forget();
 
             RequestPopupClosing();
