@@ -30,8 +30,8 @@ namespace Popup {
                 response = await NetworkManager.Instance.MatchAsync(ct);
             } catch (Exception ex) {
                 await NetworkManager.Instance.DisconnectSocketAsync();
-                RequestPopupClosing();
                 if (ex is not OperationCanceledException) {
+                    RequestPopupClosing();
                     Debug.LogError(ex);
                 }
                 return;
