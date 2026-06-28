@@ -14,6 +14,8 @@ public class GameManager : SingletonMonoBehaviour<GameManager> {
     [SerializeField] private ClientGameLoop clientGameLoop;
     private bool isEnding;
 
+    public bool IsBotModeActivated = false;
+
     public void Initialize(ReadyEventMessageDto readyEvent) {
         mapRenderer.Render(readyEvent.Map);
         clientGameLoop.Initialize(readyEvent.Players);
