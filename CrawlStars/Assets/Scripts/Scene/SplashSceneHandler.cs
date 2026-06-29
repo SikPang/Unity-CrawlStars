@@ -10,6 +10,7 @@ namespace Scene {
             Screen.SetResolution(1920, 1080, true);
             QualitySettings.vSyncCount = 0;
             Application.targetFrameRate = 60;
+            Application.runInBackground = true;
         }
 
         private void Start() {
