@@ -62,40 +62,45 @@ namespace Core.Simulator {
             Vector2 targetDirection = target == null ? Vector2.zero 
                 : (target.transform.position - curMe.transform.position).normalized;
 
-            // 회피 체크
-            if (TryGetDodgeDirection(curProjectiles, curMe, out Vector2 dodgeDirection)) {
-                state = State.Dodge;
-                StoreProjectilePositions(curProjectiles);
-                return (dodgeDirection, Vector2.zero);
-            }
-
             if (target == null) {
                 state = State.Explore;
                 StoreProjectilePositions(curProjectiles);
                 return (Vector2.zero, Vector2.zero);
             }
+            
+            Vector2 moveDirection = Vector2.zero;
+            Vector2 attackDirection = Vector2.zero;
 
+            // 회피 체크
+            if (TryGetDodgeDirection(curProjectiles, curMe, out Vector2 dodgeDirection)) {
+                state = State.Dodge;
+                StoreProjectilePositions(curProjectiles);
+                moveDirection = dodgeDirection;
+            }
             // 체력이 낮으면 가장 가까운 적 반대 방향으로 도망
-            if (ShouldRetreat(curMe)) {
+            else if (ShouldRetreat(curMe)) {
                 state = State.Retreat;
                 StoreProjectilePositions(curProjectiles);
                 var retreatTarget = (Vector2)curMe.transform.position - targetDirection * RetreatDistance;
                 var retreatDirection = BotPathFinder.GetMoveDirection(curMe.transform.position, retreatTarget);
-                return (retreatDirection, Vector2.zero);
+                moveDirection = retreatDirection;
+            }
+            // 추격
+            else {
+                state = State.Chase;
+                StoreProjectilePositions(curProjectiles);
+                var chaseDirection = BotPathFinder.GetMoveDirection(curMe.transform.position, target.transform.position);
+                moveDirection =  chaseDirection;
             }
 
             // 공격 범위 체크
             if (IsInAttackRange(curMe, target)) {
                 state = State.Attack;
                 StoreProjectilePositions(curProjectiles);
-                return (Vector2.zero, targetDirection);
+                attackDirection = targetDirection;
             }
 
-            // 추격
-            state = State.Chase;
-            StoreProjectilePositions(curProjectiles);
-            var moveDirection = BotPathFinder.GetMoveDirection(curMe.transform.position, target.transform.position);
-            return (moveDirection, Vector2.zero);
+            return (moveDirection, attackDirection);
         }
 
         private PlayerListener FindNearestTarget(Dictionary<string, PlayerListener> players, PlayerListener curMe) {
