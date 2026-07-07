@@ -8,11 +8,13 @@ using UnityEngine.UI;
 namespace Scene {
     public class PlaySceneHandler : BaseSceneHandler {
         [SerializeField] private BenchMarker benchMarker;
+        [SerializeField] private AimRenderer aimRenderer;
         [SerializeField] private GameObject waitingCurtain;
 
         protected override void Start() {
             base.Start();
-            GameManager.Instance.RegisterInputAction(benchMarker.OnPressKey);
+            GameManager.Instance.RegisterOnSendInput(benchMarker.OnPressKey);
+            GameManager.Instance.RegisterOnDetectInput(aimRenderer.OnPressKey);
             NetworkManager.Instance.SnapshotReceived += benchMarker.OnReceiveSnapshot;
             NetworkManager.Instance.SnapshotReceived += HideWaitingCurtain;
             
@@ -20,7 +22,8 @@ namespace Scene {
         }
 
         private void OnDestroy() {
-            GameManager.Instance.UnregisterInputAction(benchMarker.OnPressKey);
+            GameManager.Instance.UnregisterOnSendInput(benchMarker.OnPressKey);
+            GameManager.Instance.UnregisterOnDetectInput(aimRenderer.OnPressKey);
             NetworkManager.Instance.SnapshotReceived -= benchMarker.OnReceiveSnapshot;
             NetworkManager.Instance.SnapshotReceived -= HideWaitingCurtain;
         }
