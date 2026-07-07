@@ -29,7 +29,10 @@ public class CharacterPopup : PopupHandler {
 
     private async UniTaskVoid SetDataAsync() {
         var info = await CharacterManager.Instance.GetCharacterInfoAsync();
-        if (info == null) return;
+        if (info == null) {
+            RequestPopupClosing();
+            return;
+        }
 
         foreach (var item in info.items) {
             var characterItem = ObjectPooling.Instance.Get<CharacterItem>(nameof(CharacterItem), itemRoot);

@@ -28,6 +28,10 @@ public class ModePopup : PopupHandler {
 
     private async UniTaskVoid SetDataAsync() {
         var info = await ModeManager.Instance.GetModeInfoAsync();
+        if (info == null) {
+            RequestPopupClosing();
+            return;
+        }
 
         foreach (var item in info.items) {
             var modeItem = ObjectPooling.Instance.Get<ModeItem>(nameof(ModeItem), itemRoot);
