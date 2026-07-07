@@ -12,7 +12,9 @@ namespace Core.Controller {
     public class ClientGameLoop : MonoBehaviour {
         [SerializeField] private InputProvider inputProvider;
 
-        public Action<Vector2, Vector2> OnReceivedInput;
+        public Action<Vector2, bool> OnDetectInput;
+        public Action<Vector2, Vector2> OnSendInput;
+
         private float accumulator;
         private bool isActive;
         private bool isInitialized;
@@ -40,6 +42,8 @@ namespace Core.Controller {
                 }
                 accumulator -= InputInterval;
             }
+
+            OnDetectInput?.Invoke(inputProvider.AimDirection, inputProvider.UsedSkill);
         }
 
         public bool Initialize(IReadOnlyList<ReadyPlayerDto> players) {
@@ -80,7 +84,7 @@ namespace Core.Controller {
             Vector2 moveDirection = inputProvider.GetMoveDirection();
             Vector2 attackDirection = inputProvider.CaptureAttackDirection();
 
-            OnReceivedInput?.Invoke(moveDirection, attackDirection);
+            OnSendInput?.Invoke(moveDirection, attackDirection);
 
             await NetworkManager.Instance.SendSocketJsonAsync(new InputMessageDto {
                 MoveDir = new Vector2Dto(moveDirection),

@@ -43,8 +43,10 @@ public class GameManager : SingletonMonoBehaviour<GameManager> {
         isEnding = false;
     }
 
-    public void RegisterInputAction(Action<Vector2, Vector2> callback) => clientGameLoop.OnReceivedInput += callback;
-    public void UnregisterInputAction(Action<Vector2, Vector2> callback) => clientGameLoop.OnReceivedInput -= callback;
+    public void RegisterOnSendInput(Action<Vector2, Vector2> callback) => clientGameLoop.OnSendInput += callback;
+    public void UnregisterOnSendInput(Action<Vector2, Vector2> callback) => clientGameLoop.OnSendInput -= callback;
+    public void RegisterOnDetectInput(Action<Vector2, bool> callback) => clientGameLoop.OnDetectInput += callback;
+    public void UnregisterOnDetectInput(Action<Vector2, bool> callback) => clientGameLoop.OnDetectInput -= callback;
 
     public async UniTask EndGameAsync(string result) {
         if (isEnding) return;

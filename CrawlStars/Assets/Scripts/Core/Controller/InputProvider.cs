@@ -4,10 +4,14 @@ using Cache = Utility.Cache;
 
 namespace Core.Controller {
     public class InputProvider : MonoBehaviour {
+        private enum AimButton { None, Left, Right }
+
         public Vector2 AimDirection { get; private set; }
         private Vector2 attackDirection;
         public bool IsActivated { get; set; }
-        
+        public bool UsedSkill { get; private set; }
+        private AimButton currentAimButton = AimButton.None;
+
         private void Update() {
             if (!IsActivated) {
                 AimDirection = Vector2.zero;
@@ -15,16 +19,36 @@ namespace Core.Controller {
                 return;
             }
 
-            // 조준
-            if (Input.GetKey(KeyCode.Mouse0)) {
+            // 조준 시작
+            if (currentAimButton == AimButton.None) {
+                bool leftDown = Input.GetKeyDown(KeyCode.Mouse0);
+                bool rightDown = Input.GetKeyDown(KeyCode.Mouse1);
+
+                // 같은 프레임에 둘 다 눌리면 무시
+                if (leftDown && !rightDown) {
+                    currentAimButton = AimButton.Left;
+                    UsedSkill = false;
+                } else if (rightDown && !leftDown) {
+                    currentAimButton = AimButton.Right;
+                    UsedSkill = true;
+                }
+            }
+
+            // 조준 중
+            bool isAiming = (currentAimButton == AimButton.Left && Input.GetKey(KeyCode.Mouse0)) ||
+                            (currentAimButton == AimButton.Right && Input.GetKey(KeyCode.Mouse1));
+            if (isAiming) {
                 var mouseWorldPos = GetMouseWorldPos();
                 AimDirection = (mouseWorldPos - (Vector2)Cache.MainCamera.transform.position).normalized;
             }
 
             // 발사
-            if (Input.GetKeyUp(KeyCode.Mouse0)) {
+            bool released = (currentAimButton == AimButton.Left && Input.GetKeyUp(KeyCode.Mouse0)) ||
+                            (currentAimButton == AimButton.Right && Input.GetKeyUp(KeyCode.Mouse1));
+            if (released) {
                 attackDirection = AimDirection;
                 AimDirection = Vector2.zero;
+                currentAimButton = AimButton.None;
             }
         }
 
