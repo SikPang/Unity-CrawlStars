@@ -25,8 +25,9 @@ namespace Scene {
         private async UniTask InitializeAsync() {
             var configTask = GameConfig.LoadAsync();
             var modeTask = ModeManager.Instance.InitializeAsync();
+            var characterTask = CharacterManager.Instance.InitializeAsync();
 
-            await UniTask.WhenAll(configTask, modeTask);
+            await UniTask.WhenAll(configTask, modeTask, characterTask);
 
             await SceneController.Instance.ChangeSceneAsync(SceneController.MainSceneName);
         }
