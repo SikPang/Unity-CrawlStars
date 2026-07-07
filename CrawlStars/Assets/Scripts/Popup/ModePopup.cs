@@ -23,6 +23,7 @@ public class ModePopup : PopupHandler {
             ObjectPooling.Instance.TryAbandon(nameof(ModeItem), modeItem.gameObject);
         }
         modeItems.Clear();
+        base.Dispose(result);
     }
 
     private async UniTaskVoid SetDataAsync() {
