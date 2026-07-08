@@ -25,7 +25,7 @@ public class StatusBar : MonoBehaviour {
         gameObject.SetActive(true);
     }
 
-    public void SetColor(bool isMySide, bool isMe) {
+    public void SetColor(bool isMe, bool isMySide) {
         barImage.color = isMe ? MyColor : (isMySide ? MySideColor : OtherSideColor);
     }
 

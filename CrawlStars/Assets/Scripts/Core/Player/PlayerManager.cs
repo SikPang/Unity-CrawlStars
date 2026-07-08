@@ -29,10 +29,11 @@ namespace Core.Player {
                 var listener = ObjectPooling.Instance.Get<PlayerListener>(Constants.Player);
                 if (listener == null) continue;
 
-                listener.Initialize(player);
+                bool isMe = player.Id == MyId;
+                listener.Initialize(player, isMe);
                 playerListeners.Add(player.Id, listener);
 
-                if (player.Id == MyId) {
+                if (isMe) {
                     myListener = listener;
                 }
             }
