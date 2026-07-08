@@ -52,9 +52,7 @@ namespace Popup {
 
         private void SetPlayerCards(IReadOnlyList<ReadyPlayerDto> players) {
             if (players == null) {
-                foreach (var playerCard in playerCards) {
-                    playerCard.gameObject.SetActive(false);
-                }
+                TurnOffPlayerCards();
                 Debug.LogError("CountdownPopup.SetPlayerCards::players in param is null");
                 return;
             }
@@ -66,19 +64,34 @@ namespace Popup {
 
             vsText.SetActive(!isSoloMode);
 
-            foreach (var player in players) {
-                bool isMySide = player.Team == PlayerManager.Instance.MyTeam;
-                int idx = isMySide ? mySideIdx++ : otherSideIdx++;
-                playerCards[idx].SetData(PlayerData.CharacterType.A, "Player", isMySide);
-                playerCards[idx].gameObject.SetActive(true);
-            }
+            try {
+                foreach (var player in players) {
+                    bool isMySide = player.Team == PlayerManager.Instance.MyTeam;
+                    int idx = isMySide ? mySideIdx++ : otherSideIdx++;
+                    playerCards[idx].SetData(PlayerData.CharacterType.A, "Player", isMySide);
+                    playerCards[idx].gameObject.SetActive(true);
+                }
 
-            // 혹시라도 남은 슬롯은 끄기
-            for (int i = mySideIdx; i < otherSideStartIdx; ++i) {
-                playerCards[i].gameObject.SetActive(false);
+                // 혹시라도 남은 슬롯은 끄기
+                for (int i = mySideIdx; i < otherSideStartIdx; ++i) {
+                    playerCards[i].gameObject.SetActive(false);
+                }
+
+                for (int i = otherSideIdx; i < playerCards.Count; ++i) {
+                    playerCards[i].gameObject.SetActive(false);
+                }
+            } catch (Exception e) {
+                // 서버에서 team 정보 잘 못 줬을 경우 Index OutOfBounds 발생 에러 핸들링
+                TurnOffPlayerCards();
+                Debug.LogError(e.ToString());
             }
-            for (int i = otherSideIdx; i < playerCards.Count; ++i) {
-                playerCards[i].gameObject.SetActive(false);
+        }
+
+        private void TurnOffPlayerCards() {
+            if (playerCards == null) return;
+
+            foreach (var playerCard in playerCards) {
+                playerCard.gameObject.SetActive(false);
             }
         }
 
