@@ -20,7 +20,7 @@ namespace Core {
         public static int Version { get; private set; }
         public static float TileSize { get; private set; }
         public static float PlayerRadius { get; private set; }
-        public static PlayerConfig[] PlayerConfigs { get; private set; } = Array.Empty<PlayerConfig>();
+        public static PlayerConfig[] PlayerConfigs { get; set; }
         public static float ProjectileRadius { get; private set; }
 
         public static async UniTask LoadAsync() {

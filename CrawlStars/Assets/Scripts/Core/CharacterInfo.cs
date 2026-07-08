@@ -51,6 +51,9 @@ namespace Core {
                     Debug.LogError($"CharacterInfo.ctor::duplicate types in playerConfig/{type}");
                 }
             }
+
+            Data = data;
+            GameConfig.PlayerConfigs = null;
         }
     }
 }
