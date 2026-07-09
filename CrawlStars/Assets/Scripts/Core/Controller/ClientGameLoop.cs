@@ -11,6 +11,7 @@ using UnityEngine;
 namespace Core.Controller {
     public class ClientGameLoop : MonoBehaviour {
         [SerializeField] private InputProvider inputProvider;
+        [SerializeField] private AttackManager attackManager;
 
         public Action<Vector2, bool> OnDetectInput;
         public Action<Vector2, Vector2> OnSendInput;
@@ -48,19 +49,19 @@ namespace Core.Controller {
             OnDetectInput?.Invoke(inputProvider.AimDirection, inputProvider.UsedSkill);
         }
 
-        public bool Initialize(IReadOnlyList<ReadyPlayerDto> players) {
-            if (isInitialized) return false;
+        public void Initialize(IReadOnlyList<ReadyPlayerDto> players) {
+            if (isInitialized) return;
 
             if (players == null) {
                 Debug.LogError("ClientGameLoop.Initialize::ready players are null.");
-                return false;
+                return;
             }
 
             curPlayers = players;
             PlayerManager.Instance.Initialize(players);
             ProjectileManager.Instance.Initialize();
+            attackManager.Initialize();
             isInitialized = true;
-            return true;
         }
 
         public void SetActive(bool isActive) {
@@ -86,6 +87,15 @@ namespace Core.Controller {
         private async UniTask SendInputAsync() {
             Vector2 moveDirection = inputProvider.GetMoveDirection();
             Vector2 attackDirection = inputProvider.CaptureAttackDirection();
+
+            // 쿨타임 체크
+            if (attackDirection != Vector2.zero) {
+                if (inputProvider.UsedSkill && !attackManager.TrySkillAttack()) {
+                    attackDirection = Vector2.zero;
+                } else if (!inputProvider.UsedSkill && !attackManager.TryNormalAttack()) {
+                    attackDirection = Vector2.zero;
+                }
+            }
 
             OnSendInput?.Invoke(moveDirection, attackDirection);
 
