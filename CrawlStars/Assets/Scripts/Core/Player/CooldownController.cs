@@ -42,8 +42,10 @@ namespace Core.Player {
                 skillTimer = 0f;
             } else {
                 skillTimer += deltaTime;
+
                 if (skillTimer >= skillSeconds) {
                     IsSkillCharged = true;
+                    skillTimer = 0f;
                 }
             }
         }
