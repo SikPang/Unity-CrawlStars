@@ -67,6 +67,7 @@ namespace Core.Map {
                 if (player.Id == PlayerManager.Instance.MyId) continue;
                 if (!PlayerManager.Instance.GetListener(player.Id, out PlayerListener listener)) continue;
                 if (player.IsDead) continue;
+                if (player.Team == PlayerManager.Instance.MyTeam) continue;
 
                 var idx = MapHelper.GetMapIdx(listener.transform.position);
                 if (!MapHelper.IsInBush(idx)) {

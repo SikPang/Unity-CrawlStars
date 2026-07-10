@@ -31,6 +31,7 @@ namespace Core.Player {
 
                 bool isMe = player.Id == MyId;
                 listener.Initialize(player, isMe);
+                listener.gameObject.SetActive(true);
                 playerListeners.Add(player.Id, listener);
 
                 if (isMe) {
