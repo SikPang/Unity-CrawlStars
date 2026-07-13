@@ -28,6 +28,7 @@ namespace Scene {
             selectModeButton.onClick.AddListener(OnClickSelectModeButton);
 
             botModeToggle.onValueChanged.AddListener(OnValueChangedBotMode);
+            botModeToggle.isOn = GameManager.Instance.IsBotModeActivated;
 
             selectedModeText.text = ModeManager.Instance.CurGameMode.ToString();
             selectedCharacterText.text = CharacterManager.Instance.MyCharacterType.ToString();
