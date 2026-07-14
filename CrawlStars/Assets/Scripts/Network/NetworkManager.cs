@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using UnityEngine;
 
 namespace Network {
+    [DefaultExecutionOrder(-200)] // 수신 메시지를 게임 로직 Update 전에 dispatch
     public class NetworkManager : SingletonMonoBehaviour<NetworkManager> {
         private NetworkConfig config;
         private WebSocketClient socketClient;
