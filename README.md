@@ -197,6 +197,8 @@ Unity Test Framework와 NUnit 기반 단위 테스트 구성. 순수 로직과 U
 - [게임 기본 루프 개발 - 브롤스타즈 모작 #2](https://sikpang.tistory.com/57)
 - [서버 연동 - 브롤스타즈 모작 #3](https://sikpang.tistory.com/64)
 
+<br/>
+
 ## 주요 디렉터리
 
 ```text
@@ -217,6 +219,8 @@ CrawlStars/
    ├─ References/API        OpenAPI, AsyncAPI 계약
    └─ FlowCharts            Core, UI, Matching 흐름도
 ```
+
+<br/>
 
 ## 문서
 
